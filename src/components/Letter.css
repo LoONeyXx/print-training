@@ -1,0 +1,12 @@
+.letter {
+    color: rgba(127, 255, 212, 0.397);
+    transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+    margin: 0;
+    padding: 0;
+    font-size: 24px;
+    min-width: 8px;
+}
+
+.letter_active {
+    color: rgba(127, 255, 212, 0.863);
+}
