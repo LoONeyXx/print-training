@@ -1,31 +1,17 @@
 .letter {
+    display: inline-block;
     color: rgba(127, 255, 212, 0.397);
     margin: 0;
-    padding: 0;
-    font-size: 48px;
-    min-width: 8px;
+    padding: 5px 0 0;
+    font-size: 46px;
+    line-height: 0.8;
+
 }
 
 .letter_active {
-    color: rgba(127, 255, 212, 0.8);
-    animation: visible 3s cubic-bezier(0.075, 0.82, 0.3, 0.6) forwards;
+    color: rgba(127, 255, 212, 0.8); 
+    text-shadow: 0 0 10px white;
+   
 }
 
 
-@keyframes visible {
-    0% {
-        opacity:1;
-        transform: scale(1);
-        
-    }
-
-    25% {
-        transform: scale(1.2);
-        opacity:1;
-    }
-
-    100% {
-        opacity: 0;
-        transform: scale(1);
-    }
-}

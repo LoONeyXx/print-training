@@ -31,9 +31,7 @@
     border-radius: 20px;
     display: flex;
     list-style: none;
-    padding: 20px;
-    justify-content: center;
-    align-items: center;
+    padding: 10px;
     flex-wrap: wrap;
 }
 
@@ -79,41 +77,40 @@
 }
 
 .statistic p {
-  margin: 0;
+    margin: 0;
 }
 .statistic {
     align-self: start;
 }
 
 .current-count-number {
-  color:green;
+    color: green;
 }
 .miss-count-number {
-  color:rgb(124, 4, 4);
+    color: rgb(124, 4, 4);
 }
 
-
 .bpm-count-number {
-  color:rgb(9, 9, 117);
+    color: rgb(9, 9, 117);
 }
 
 .bpm-count-number_medium {
-  color:yellow;
+    color: yellow;
 }
 
 .bpm-count-number_high {
-  color:rgb(9, 97, 36);
+    color: rgb(9, 97, 36);
 }
 .accuracy-count-number {
-  color:red;
+    color: red;
 }
 .accuracy-count-number_high {
-  color:green;
+    color: green;
 }
 .accuracy-count-number_medium {
-  color:yellow;
+    color: yellow;
 }
 
 .list-letter {
-  min-width: 12px;
+    min-width: 12px;
 }

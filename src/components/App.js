@@ -2,142 +2,152 @@ import './App.css';
 import Header from './Header';
 import React, { useEffect } from 'react';
 import Letter from './Letter';
-import { texts } from '../contexts/CurrentText';
+import Word from './Word';
+import useStart from './hooks/useStart';
+import useStatistic from './hooks/useStatistic';
 function App() {
-    const [currentText, setCurrentText] = React.useState('');
-    const [current, setCurrent] = React.useState({ count: 0, symbol: '' });
-    const [isPlaying, setPlaying] = React.useState(false);
-    const [statistics, setStatistics] = React.useState({ well: 0, miss: 0, bpm: 0, accuracy: 0 });
-    const [timer, setTimer] = React.useState(0);
-    const startGame = React.useCallback(
-        function startGame(e) {
-            const random = Math.floor(Math.random() * (texts.length - 1 - 1 + 1) + 1);
-            setCurrentText((prev) => (prev ? `${prev} ${texts[random]}`.trim() : texts[random]));
+    const [
+        currentSymbol,
+        currentWord,
+        currentText,
+        isPlaying,
+        onStart,
+        onStop,
+        onNextSymbol,
+        onNextWord,
+        onResetCurrent,
+    ] = useStart();
+    const [statistics, onChangeMiss, onChangeWell] = useStatistic(isPlaying);
 
-            setStatistics({ well: 0, miss: 0, bpm: 0, accuracy: 100 });
-            setCurrent((prev) => ({ count: 0, symbol: currentText[prev.count] }));
-            setPlaying(true);
-            setTimer(0);
-        },
-        [currentText]
-    );
-
-    useEffect(() => {
-        if (isPlaying) {
-            console.log(isPlaying);
-            if (currentText.length > 200) {
-                console.log(200);
-                return;
-            }
-
-            const random = Math.floor(Math.random() * (texts.length - 1 - 1 + 1) + 1);
-
-            setCurrentText((prev) => (prev ? `${prev} ${texts[random]}`.trim() : texts[random]));
-            // setCurrentText((prev) => `${prev} ${texts[random]}`);
-            // }
-        } else {
-            setCurrentText('');
-        }
-    }, [isPlaying, currentText]);
-    function endGame() {
-        setPlaying(false);
-    }
-    useEffect(() => {
-        if (current.count === currentText.length) {
-            endGame();
-        }
-    });
-    useEffect(() => {
-        setStatistics((prev) => ({ ...prev, bpm: (60 / timer) * prev.well }));
-    }, [timer]);
-    useEffect(() => {
-        setStatistics((prev) => ({
-            ...prev,
-            accuracy: prev.well ? (prev.well * 100) / (prev.well + prev.miss) : 100,
-        }));
-    }, [statistics.miss, statistics.well]);
-    useEffect(() => {
-        let timerId = setInterval(() => {
-            setTimer((prev) => prev + 1);
-        }, 1000);
-
-        if (!isPlaying) {
-            clearInterval(timerId);
-        }
-
-        return () => {
-            clearInterval(timerId);
-        };
-    }, [isPlaying]);
-
-    useEffect(() => {
-        if (currentText) {
-            setCurrent((prev) => ({
-                ...prev,
-                symbol: currentText[current.count] === ' ' ? '_' : currentText[current.count],
-            }));
-        }
-    }, [currentText, current.count]);
-
-    const isSomeSymbols = React.useCallback(function isSomeSymbols(symbol) {
-        return symbol === 'Shift' || symbol === 'Alt' || symbol === 'Control' || symbol === 'Escape';
+    const isSomeSymbols = React.useCallback(function isSomeSymbols(e) {
+        return e.key === 'Shift' || e.key === 'Alt' || e.key === 'Control' || e.key === 'Escape';
     }, []);
-    const isBackspace = React.useCallback(
-        (symbol) => {
-            return symbol === ' ' && current.symbol === '_';
-        },
-        [current.symbol]
-    );
 
-    const getCurrentKey = React.useCallback(
-        (e) => {
-            if ((current.symbol === e.key && !isSomeSymbols(e.key)) || isBackspace(e.key)) {
-                setCurrent((prev) => ({ count: prev.count + 1, symbol: currentText[prev.count + 1] }));
-                setStatistics((prev) => ({ ...prev, well: prev.well + 1 }));
-                return;
-            }
-
-            if (e.key === 'Escape') {
-                setPlaying(false);
-            }
-            if (isSomeSymbols(e.key)) {
-                return;
-            }
-
-            setStatistics((prev) => ({ ...prev, miss: prev.miss + 1 }));
-        },
-        [currentText, isSomeSymbols, current.symbol, isBackspace]
-    );
-    useEffect(() => {
-        window.addEventListener('keydown', getCurrentKey);
-        if (!isPlaying) {
-            window.removeEventListener('keydown', getCurrentKey);
-        }
-        return () => {
-            window.removeEventListener('keydown', getCurrentKey);
-        };
-    }, [getCurrentKey, isPlaying]);
-    const getLevelAccuracy = React.useCallback((accuracy) => {
-        if (accuracy > 90) {
+    const getLevelAccuracy = React.useCallback(() => {
+        if (statistics.accuracy > 90) {
             return 'accuracy-count-number_high';
         }
-        if (accuracy > 80) {
+        if (statistics.accuracy > 80) {
             return 'accuracy-count-number_medium';
         }
 
         return '';
-    }, []);
-    const getLevelBpm = React.useCallback(function getLevelBpm(bpm) {
-        if (bpm > 100 && bpm < 200) {
-            return 'bpm-count-number_medium';
-        }
+    }, [statistics]);
 
-        if (bpm > 200) {
-            return 'bpm-count-number_high';
-        }
+    const getLevelBpm = React.useCallback(
+        function getLevelBpm() {
+            if (statistics.bpm > 100 && statistics.bpm < 200) {
+                return 'bpm-count-number_medium';
+            }
 
-        return '';
-    }, []);
+            if (statistics.bpm > 200) {
+                return 'bpm-count-number_high';
+            }
+
+            return '';
+        },
+        [statistics]
+    );
+    const handleSuccessSymbol = React.useCallback(
+        function handleSuccessSymbol() {
+            onChangeWell();
+            onNextSymbol();
+        },
+        [onNextSymbol, onChangeWell]
+    );
+    const handleMissSymbol = React.useCallback(() => {
+        onChangeMiss();
+        onResetCurrent();
+    }, [onChangeMiss, onResetCurrent]);
+
+    const handleSuccessWord = React.useCallback(
+        function handleSuccessWord() {
+            onChangeWell();
+            onNextWord();
+        },
+        [onNextWord, onChangeWell]
+    );
+
+    const isSuccessSymbol = React.useCallback(
+        function isSuccsessSymbol(e) {
+            return currentSymbol.symbol === e.key;
+        },
+        [currentSymbol]
+    );
+    const isSuccessWord = React.useCallback(
+        function isSuccsessWord() {
+            return currentSymbol.count === currentWord.word.length;
+        },
+        [currentSymbol.count, currentWord.word]
+    );
+
+    function getWordActive(index) {
+        if (currentWord.count === index) {
+            return 'word_active';
+        }
+        if (currentWord.count > index) {
+            return 'word_deactive';
+        }
+    }
+
+    function getSumbitText() {
+        if (!currentText) {
+            return 'Начать игру';
+        }
+        if (isPlaying) {
+            return 'Нажмите Esc для паузы';
+        }
+        return 'Продолжить';
+    }
+
+    const handleKey = React.useCallback(
+        (e) => {
+            if (e.key === 'Escape') {
+                onStop();
+                return;
+            }
+            if (isSomeSymbols(e)) {
+                return;
+            }
+            if (e.key === ' ' && isSuccessWord()) {
+                handleSuccessWord();
+                return;
+            }
+            if (isSuccessSymbol(e)) {
+                handleSuccessSymbol();
+                return;
+            }
+            handleMissSymbol();
+        },
+        [
+            isSomeSymbols,
+            isSuccessSymbol,
+            handleSuccessSymbol,
+            isSuccessWord,
+            handleSuccessWord,
+            onStop,
+            handleMissSymbol,
+        ]
+    );
+
+    useEffect(() => {
+        window.addEventListener('keydown', handleKey);
+        if (!isPlaying) {
+            window.removeEventListener('keydown', handleKey);
+        }
+        return () => {
+            window.removeEventListener('keydown', handleKey);
+        };
+    }, [handleKey, isPlaying]);
+
+    // useEffect(() => {
+    //     if (currentText) {
+    //         setCurrentSymbol((prev) => ({
+    //             ...prev,
+    //             symbol: currentText[currentSymbol.count] === ' ' ? '_' : currentText[currentSymbol.count],
+    //         }));
+    //     }
+    // }, [currentText, currentSymbol.count]);
 
     return (
         <div className='App'>
@@ -147,10 +157,10 @@ function App() {
                     <button
                         disabled={isPlaying && true}
                         type='button'
-                        onClick={startGame}
+                        onClick={onStart}
                         className={`button ${isPlaying && 'button_disabled'}`}
                     >
-                        Начать тренировку
+                        {getSumbitText()}
                     </button>
                     <div className='statistic-group'>
                         <div className='statistic'>
@@ -162,25 +172,36 @@ function App() {
                             </p>
                             <p className='bpm-count'>
                                 BPM:
-                                <span className={`bpm-count-number ${getLevelBpm(statistics.bpm)}`}>
+                                <span className={`bpm-count-number ${getLevelBpm()}`}>
                                     {' '}
                                     {statistics.bpm ? statistics.bpm.toFixed(0) : 0}
                                 </span>
                             </p>
                             <p className='accuracy-count'>
                                 Accuracy:{' '}
-                                <span className={`accuracy-count-number ${getLevelAccuracy(statistics.accuracy)}`}>
+                                <span className={`accuracy-count-number ${getLevelAccuracy()}`}>
                                     {statistics.accuracy.toFixed(1)}%
                                 </span>
                             </p>
                         </div>
-                        <p className='current'>{current.symbol}</p>
+                        <p className='current'>{currentSymbol.symbol}</p>
                     </div>
 
                     <ul className='words-container'>
-                        {currentText.split('').map((letter, index) => (
-                            <li className='list-letter' key={index}><Letter key={index} letter={letter} isActive={index < current.count} /></li>
-                        ))}
+                        {currentText &&
+                            currentText.split(' ').map((word, indexWord) => (
+                                <Word isActive={getWordActive(indexWord)} key={indexWord}>
+                                    {word.split('').map((letter, index) => (
+                                        <Letter
+                                            isActive={
+                                                currentWord.count === indexWord && currentSymbol.count > index
+                                            }
+                                            key={index}
+                                            letter={letter}
+                                        />
+                                    ))}
+                                </Word>
+                            ))}
                     </ul>
                 </div>
             </main>
