@@ -1,26 +1,29 @@
 import { useEffect, useState } from 'react';
 
 function useStatistic(isPlaying) {
-    const [statistics, setStatistics] = useState({ well: 0, miss: 0, bpm: 0, accuracy: 0 });
+    const [statistics, setStatistics] = useState({ success: 0, miss: 0, bpm: 0, accuracy: 0 });
     const [timer, setTimer] = useState(0);
-
-    function onChangeMiss() {
-        setStatistics((prev) => ({ ...prev, miss: prev.miss + 1 }));
+    function resetStatistics() {
+        setStatistics({ success: 0, miss: 0, bpm: 0, accuracy: 0 });
     }
-    function onChangeWell() {
-        setStatistics((prev) => ({ ...prev, well: prev.well + 1 }));
+
+    function setMiss(count) {
+        setStatistics((prev) => ({ ...prev, miss: count }));
+    }
+    function setSuccess(count) {
+        setStatistics((prev) => ({ ...prev, success: count }));
     }
 
     useEffect(() => {
-        setStatistics((prev) => ({ ...prev, bpm: (60 / timer) * prev.well }));
+        setStatistics((prev) => ({ ...prev, bpm: (60 / timer) * prev.success }));
     }, [timer]);
 
     useEffect(() => {
         setStatistics((prev) => ({
             ...prev,
-            accuracy: prev.well ? (prev.well * 100) / (prev.well + prev.miss) : 100,
+            accuracy: prev.success ? (prev.success * 100) / (prev.success + prev.miss) : 100,
         }));
-    }, [statistics.miss, statistics.well]);
+    }, [statistics.miss, statistics.success]);
 
     useEffect(() => {
         let timerId = setInterval(() => {
@@ -36,7 +39,7 @@ function useStatistic(isPlaying) {
         };
     }, [isPlaying]);
 
-    return [statistics, onChangeMiss, onChangeWell];
+    return [statistics, resetStatistics, setSuccess, setMiss];
 }
 
 export default useStatistic;

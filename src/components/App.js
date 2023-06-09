@@ -1,27 +1,33 @@
 import './App.css';
 import Header from './Header';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Letter from './Letter';
 import Word from './Word';
-import useStart from './hooks/useStart';
+import useSymbol from './hooks/useSymbol';
+import useWord from './hooks/useWord';
 import useStatistic from './hooks/useStatistic';
+import useText from './hooks/useText';
+import { texts } from '../contexts/CurrentText';
+import useEventKey from './hooks/useEventKey';
+import useClass from './hooks/useClass';
 function App() {
-    const [
-        currentSymbol,
-        currentWord,
-        currentText,
-        isPlaying,
-        onStart,
-        onStop,
-        onNextSymbol,
-        onNextWord,
-        onResetCurrent,
-    ] = useStart();
-    const [statistics, onChangeMiss, onChangeWell] = useStatistic(isPlaying);
+    const [isPlaying, setPlaying] = React.useState(false);
+    const [mode, setMode] = React.useState('standart');
+    const [currentText, setStartText, setCurrentText] = useText([]);
+    const { currentWord, setNextWord } = useWord(currentText);
+    const { currentSymbol, setNextSymbol } = useSymbol(currentWord.word);
+    const [statistics, resetStatistics, setSuccess, setMiss] = useStatistic(isPlaying);
+    const [leftWords, setLeftWords] = React.useState([]);
+    const [isSuccsessSymbol, isSuccsessWord, isSomeSymbols] = useEventKey(currentSymbol, currentWord);
+    const [getSumbitText, getWordClass] = useClass(currentWord, leftWords, isPlaying);
 
-    const isSomeSymbols = React.useCallback(function isSomeSymbols(e) {
-        return e.key === 'Shift' || e.key === 'Alt' || e.key === 'Control' || e.key === 'Escape';
-    }, []);
+    useEffect(() => {
+        console.log(currentWord);
+    }, [currentWord]);
+
+    useEffect(() => {
+        setLeftWords(currentText.map((el, index) => index));
+    }, [currentText]);
 
     const getLevelAccuracy = React.useCallback(() => {
         if (statistics.accuracy > 90) {
@@ -48,88 +54,58 @@ function App() {
         },
         [statistics]
     );
-    const handleSuccessSymbol = React.useCallback(
-        function handleSuccessSymbol() {
-            onChangeWell();
-            onNextSymbol();
-        },
-        [onNextSymbol, onChangeWell]
-    );
-    const handleMissSymbol = React.useCallback(() => {
-        onChangeMiss();
-        onResetCurrent();
-    }, [onChangeMiss, onResetCurrent]);
 
-    const handleSuccessWord = React.useCallback(
-        function handleSuccessWord() {
-            onChangeWell();
-            onNextWord();
-        },
-        [onNextWord, onChangeWell]
-    );
-
-    const isSuccessSymbol = React.useCallback(
-        function isSuccsessSymbol(e) {
-            return currentSymbol.symbol === e.key;
-        },
-        [currentSymbol]
-    );
-    const isSuccessWord = React.useCallback(
-        function isSuccsessWord() {
-            return currentSymbol.count === currentWord.word.length;
-        },
-        [currentSymbol.count, currentWord.word]
-    );
-
-    function getWordActive(index) {
-        if (currentWord.count === index) {
-            return 'word_active';
-        }
-        if (currentWord.count > index) {
-            return 'word_deactive';
-        }
-    }
-
-    function getSumbitText() {
-        if (!currentText) {
-            return 'Начать игру';
-        }
-        if (isPlaying) {
-            return 'Нажмите Esc для паузы';
-        }
-        return 'Продолжить';
-    }
+    const startGame = React.useCallback(() => {
+        setPlaying(true);
+        setStartText(texts, 1);
+    }, [setStartText]);
 
     const handleKey = React.useCallback(
         (e) => {
-            if (e.key === 'Escape') {
-                onStop();
-                return;
-            }
             if (isSomeSymbols(e)) {
+                console.log(isSomeSymbols(e));
                 return;
             }
-            if (e.key === ' ' && isSuccessWord()) {
-                handleSuccessWord();
+            if (isSuccsessWord(e) && leftWords.length === 1) {
+                setPlaying(false);
+                setCurrentText([]);
+                setNextSymbol(0);
+                setNextWord(0);
+                resetStatistics()
                 return;
             }
-            if (isSuccessSymbol(e)) {
-                handleSuccessSymbol();
+            if (isSuccsessWord(e)) {
+                setNextWord(currentWord.count === currentText.length ? '' : currentWord.count + 1);
+                setNextSymbol(0);
+                setLeftWords((prev) => prev.filter((el) => el !== currentWord.count));
                 return;
             }
-            handleMissSymbol();
+            if (isSuccsessSymbol(e)) {
+                console.log('else');
+                setNextSymbol(currentSymbol.count + 1);
+                setSuccess(statistics.success + 1);
+                return;
+            }
+
+            setNextSymbol(0);
+            const successed = statistics.success - currentSymbol.count;
+            setMiss(statistics.miss + 1);
+            setSuccess(successed);
         },
         [
+            currentText,
+            statistics,
+            setMiss,
             isSomeSymbols,
-            isSuccessSymbol,
-            handleSuccessSymbol,
-            isSuccessWord,
-            handleSuccessWord,
-            onStop,
-            handleMissSymbol,
+            isSuccsessWord,
+            isSuccsessSymbol,
+            currentSymbol.count,
+            currentWord.count,
+            setNextSymbol,
+            setNextWord,
+            setSuccess,
         ]
     );
-
     useEffect(() => {
         window.addEventListener('keydown', handleKey);
         if (!isPlaying) {
@@ -140,15 +116,6 @@ function App() {
         };
     }, [handleKey, isPlaying]);
 
-    // useEffect(() => {
-    //     if (currentText) {
-    //         setCurrentSymbol((prev) => ({
-    //             ...prev,
-    //             symbol: currentText[currentSymbol.count] === ' ' ? '_' : currentText[currentSymbol.count],
-    //         }));
-    //     }
-    // }, [currentText, currentSymbol.count]);
-
     return (
         <div className='App'>
             <Header />
@@ -157,7 +124,7 @@ function App() {
                     <button
                         disabled={isPlaying && true}
                         type='button'
-                        onClick={onStart}
+                        onClick={startGame}
                         className={`button ${isPlaying && 'button_disabled'}`}
                     >
                         {getSumbitText()}
@@ -165,7 +132,7 @@ function App() {
                     <div className='statistic-group'>
                         <div className='statistic'>
                             <p className='current-count'>
-                                Well:<span className='current-count-number'> {statistics.well}</span>
+                                Success:<span className='current-count-number'> {statistics.success}</span>
                             </p>
                             <p className='miss-count'>
                                 Miss:<span className='miss-count-number'> {statistics.miss}</span>
@@ -184,24 +151,36 @@ function App() {
                                 </span>
                             </p>
                         </div>
-                        <p className='current'>{currentSymbol.symbol}</p>
                     </div>
-
+                    <div className={`input ${currentWord.word && 'input_active'}`}>
+                        {currentWord.word &&
+                            currentWord.word
+                                .split('')
+                                .map((letter, index) => (
+                                    <Letter key={index} letter={letter} isActive={currentSymbol.count > index} />
+                                ))}
+                    </div>
                     <ul className='words-container'>
-                        {currentText &&
-                            currentText.split(' ').map((word, indexWord) => (
-                                <Word isActive={getWordActive(indexWord)} key={indexWord}>
+                        {currentText.length > 0 &&
+                            currentText.map((word, indexWord) => (
+                                <Word isActive={getWordClass(indexWord)} key={indexWord}>
                                     {word.split('').map((letter, index) => (
-                                        <Letter
-                                            isActive={
-                                                currentWord.count === indexWord && currentSymbol.count > index
-                                            }
-                                            key={index}
-                                            letter={letter}
-                                        />
+                                        <Letter isActive={false} key={index} letter={letter} />
                                     ))}
                                 </Word>
                             ))}
+                    </ul>
+                    <ul className='mode-group'>
+                        <li className='mode__item'>
+                            <button name='standart' className={`button ${isPlaying && 'button_disabled'}`}>
+                                Standart
+                            </button>
+                        </li>
+                        <div className='mode__item'>
+                            <button name='random' className={`button ${isPlaying && 'button_disabled'}`}>
+                                Random
+                            </button>
+                        </div>
                     </ul>
                 </div>
             </main>

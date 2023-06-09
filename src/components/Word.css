@@ -3,13 +3,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: 20px;
+    border-radius: 10px;
     border-bottom:1px solid transparent;
     transition: all .6s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .word_active {
-    border-bottom:1px solid white;
+   
+    box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.575);;
 }
 
 .word_deactive {

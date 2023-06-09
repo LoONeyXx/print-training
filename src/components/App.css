@@ -15,12 +15,16 @@
     background-color: rgb(54, 150, 102);
     width: 80%;
     margin: 0 auto;
+    padding-top:20px;
     border-radius: 20px;
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
+
+    display: grid;
+    grid-template-areas:
+        '- start-button a'
+        'statistic input mode'
+        'word-container word-container word-container';
+        grid-template-columns: 1fr 1fr 1fr;
 }
 
 .words-container {
@@ -33,13 +37,14 @@
     list-style: none;
     padding: 10px;
     flex-wrap: wrap;
+    grid-area: word-container;
+    justify-self: center;
 }
 
 .button {
     all: unset;
     padding: 20px 15px;
     background-color: rgba(6, 136, 82, 0.877);
-    margin-top: 20px;
     border-radius: 20px;
     box-shadow: inset 0 0 3px rgba(255, 255, 255, 0.781);
     cursor: pointer;
@@ -48,6 +53,12 @@
     text-transform: uppercase;
     font-weight: 600;
     letter-spacing: 2px;
+    grid-area: start-button;
+    align-self: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 .button_disabled {
     pointer-events: none;
@@ -59,21 +70,30 @@
     box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.781);
 }
 
-.current {
-    font-size: 72px;
-    margin: 20px 0;
+.input {
+    font-size: 64px;
+    display: flex; 
+    padding:0 10px 5px;
+    justify-content: center;
+    align-items: center;
     font-weight: 700;
-    min-width: 35px;
-    min-height: 72px;
     color: rgb(31, 8, 116);
-    width: 53%;
+    justify-self: center;
+    grid-area: input;
+    border-radius: 5px;
+    height: 50px;
+    align-self: center;
+}
+
+.input_active {
+    border-bottom:1px solid white;
 }
 
 .statistic-group {
-    width: 80%;
     display: flex;
     justify-content: space-between;
     font-size: 28px;
+    grid-area: statistic;
 }
 
 .statistic p {
@@ -113,4 +133,35 @@
 
 .list-letter {
     min-width: 12px;
+}
+
+
+.mode-group {
+    grid-area: mode;
+    display: flex;
+    list-style-type: none;
+    padding: 0;
+    align-self: center;
+    align-items: end;
+    margin-right:10px;
+    flex-direction: column;
+    gap:5px;
+}
+
+.mode__item {
+    display: flex;
+}
+
+.mode__button {
+    all:unset;
+    display: block;
+    padding: 5px 10px;
+    border:1px solid white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 20px;
+    cursor:pointer;
+    color:white;
+ 
 }
