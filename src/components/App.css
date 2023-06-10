@@ -7,44 +7,44 @@
 }
 
 .App {
-    background-color: rgb(33, 12, 82);
+    background-color: rgba(0, 0, 0, 0.63);
     font-family: 'Josefin Sans', sans-serif;
 }
 
 .container {
-    background-color: rgb(54, 150, 102);
+    background-color: rgb(2, 23, 27);
     width: 80%;
     margin: 0 auto;
-    padding-top:20px;
+    padding: 20px 20px;
     border-radius: 20px;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0 0 10px rgba(255, 252, 252, 0.801);
 
     display: grid;
     grid-template-areas:
-        '- start-button a'
-        'statistic input mode'
+        'statistic statistic start-button'
+        '- input mode'
         'word-container word-container word-container';
-        grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
 }
 
 .words-container {
     background-color: rgba(0, 0, 0, 0.4);
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
-    width: 90%;
+    padding:10px 20px;
     flex-shrink: 0;
     border-radius: 20px;
-    display: flex;
     list-style: none;
-    padding: 10px;
-    flex-wrap: wrap;
     grid-area: word-container;
     justify-self: center;
+    display: grid;
+    grid-template-columns: repeat(5,1fr);
+    transition: .3s cubic-bezier(0.23, 1, 0.320, 1);
 }
 
 .button {
     all: unset;
     padding: 20px 15px;
-    background-color: rgba(6, 136, 82, 0.877);
+    background-color: rgba(4, 73, 25, 0.719);
     border-radius: 20px;
     box-shadow: inset 0 0 3px rgba(255, 255, 255, 0.781);
     cursor: pointer;
@@ -70,10 +70,12 @@
     box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.781);
 }
 
+
+
 .input {
     font-size: 64px;
-    display: flex; 
-    padding:0 10px 5px;
+    display: flex;
+    padding: 0 10px 5px;
     justify-content: center;
     align-items: center;
     font-weight: 700;
@@ -86,14 +88,15 @@
 }
 
 .input_active {
-    border-bottom:1px solid white;
+    border-bottom: 1px solid white;
 }
 
 .statistic-group {
     display: flex;
-    justify-content: space-between;
     font-size: 28px;
     grid-area: statistic;
+    margin-left: 30px;
+    color: rgb(93, 93, 97);
 }
 
 .statistic p {
@@ -101,67 +104,115 @@
 }
 .statistic {
     align-self: start;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+}
+.statistic__count {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    text-transform: uppercase;
+    font-size: 24px;
+    cursor:default;
+}
+/* .statistic__count_accuracy {
+
+}
+.statistic__count_bpm {
+
+}
+.statistic__count_miss {
+
+}
+.statistic__count_success {
+
+} */
+
+.count_high {
+    color: rgb(111, 226, 145);
 }
 
-.current-count-number {
-    color: green;
-}
-.miss-count-number {
-    color: rgb(124, 4, 4);
+.count_medium {
+    color: rgb(233, 233, 113);
 }
 
-.bpm-count-number {
-    color: rgb(9, 9, 117);
-}
-
-.bpm-count-number_medium {
-    color: yellow;
-}
-
-.bpm-count-number_high {
-    color: rgb(9, 97, 36);
-}
-.accuracy-count-number {
-    color: red;
-}
-.accuracy-count-number_high {
-    color: green;
-}
-.accuracy-count-number_medium {
-    color: yellow;
+.count_low {
+    color: rgb(231, 95, 95);
 }
 
 .list-letter {
     min-width: 12px;
 }
 
-
 .mode-group {
     grid-area: mode;
     display: flex;
+    flex-direction: column;
     list-style-type: none;
     padding: 0;
     align-self: center;
-    align-items: end;
-    margin-right:10px;
+    margin-right: 10px;
     flex-direction: column;
-    gap:5px;
+    gap: 5px;
+    margin-top:20px;
 }
 
 .mode__item {
     display: flex;
-}
-
-.mode__button {
-    all:unset;
-    display: block;
-    padding: 5px 10px;
-    border:1px solid white;
+    color:white;
+    position: relative;;
+    padding:5px 10px;
+    border-radius: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: 20px;
-    cursor:pointer;
-    color:white;
- 
+    font-size: 24px;
+    text-transform: uppercase;
 }
+
+
+
+
+ /* Рисуем внешний круг радиокнопки*/
+ .custom-radio-btn {
+    position: absolute; /* Родительский элемент*/
+    width: 100%;
+    height: 100%;
+    border-radius: 20px;
+    color:blue;
+
+}
+
+/* Рисуем внутренний круг */
+.custom-radio-btn::before {
+    content: '';
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    transform: translateY(-4px);
+    border-radius: 20px;
+    border:1px solid transparent;
+
+    transition: all 0.2s ease-in;
+}
+.mode__item_active {
+    text-shadow: 0 0 15px rgb(173, 252, 232);
+}
+/* .real-radio-btn:checked + .custom-radio-btn::before {
+    border:1px solid white;
+
+}
+
+.real-radio-btn:checked + .mode__item {
+    text-shadow: 0 0 10px white;
+} */
+
+.real-radio-btn {
+    /* Скрываем реальную радио кнопку*/
+    position: absolute;
+    width:50px;
+    opacity:0;
+    }

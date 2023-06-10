@@ -8,7 +8,6 @@ export default function useSymbol(word = '') {
     }
 
     useEffect(() => {
-        console.log(currentSymbol.count);
         setCurrentSymbol((prev) => ({ ...prev, symbol: word[currentSymbol.count] }));
     }, [word, currentSymbol.count]);
 
