@@ -9,9 +9,25 @@
     align-items: center;
     justify-content: center;
     cursor:default;
+    animation: fade .8s cubic-bezier(0.4, 1, 0.55, 0.8) forwards;
 }
 
 .letter_active {
     color: rgba(127, 255, 212, 0.8);
     text-shadow: 0 0 10px white;
+}
+
+
+
+@keyframes fade {
+    0% {
+        transform: scaleX(0);
+    }
+
+    50% {
+        transform: scaleX(1.2);
+    }
+    100% {
+        transform: scaleX(1);
+    }
 }

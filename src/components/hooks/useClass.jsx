@@ -1,4 +1,4 @@
-export default function useClass(currentWord, leftWords, isPlaying) {
+export default function useClass(currentWord, leftWords, isPlaying, statistics) {
     function getWordClass(index) {
         if (currentWord.count === index) {
             return 'word_active';
@@ -10,13 +10,13 @@ export default function useClass(currentWord, leftWords, isPlaying) {
 
     function getSumbitText() {
         if (leftWords.length === 0) {
-            return 'Начать игру';
+            return 'Start game';
         }
         if (isPlaying) {
-            return 'Нажмите Esc для паузы';
+            return 'Press Esc for pause';
         }
 
-        return 'Продолжить';
+        return 'Continue';
     }
 
     return [getSumbitText, getWordClass];

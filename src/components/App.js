@@ -8,52 +8,41 @@ import useWord from './hooks/useWord';
 import useStatistic from './hooks/useStatistic';
 import useText from './hooks/useText';
 import { texts } from '../contexts/CurrentText';
-import useEventKey from './hooks/useEventKey';
+import useBoolean from './hooks/useBoolean';
 import useClass from './hooks/useClass';
+import Statistics from './Statistics';
+import currentImage from '../image/current.png';
+import statisticsImage from '../image/statistics.png';
+import startImage from '../image/start.png';
 function App() {
-
+    const [wordCounter, setWordCounter] = React.useState(1);
     const [isPlaying, setPlaying] = React.useState(false);
     const [mode, setMode] = React.useState('');
     const [currentText, setStartText, setCurrentText] = useText([]);
     const { currentWord, setNextWord } = useWord(currentText);
     const { currentSymbol, setNextSymbol } = useSymbol(currentWord.word);
-    const [statistics, resetStatistics, setSuccess, setMiss] = useStatistic(isPlaying);
+    const [statistics, resetStatistics, setSuccess, setMiss, getLevelAccuracy, getLevelBpm] =
+        useStatistic(isPlaying);
     const [leftWords, setLeftWords] = React.useState([]);
-    const [isSuccsessSymbol, isSuccsessWord, isSomeSymbols] = useEventKey(currentSymbol, currentWord);
-    const [getSumbitText, getWordClass] = useClass(currentWord, leftWords, isPlaying);
+    const [isSuccsessSymbol, isSuccsessWord, isNoActionKey, isActiveSymbol, isButtonActive, isInputActive] =
+        useBoolean(currentSymbol, currentWord, isPlaying, mode);
+    const [getSumbitText, getWordClass] = useClass(currentWord, leftWords, isPlaying, statistics);
+    const [isWon, setWon] = React.useState(false);
+    const [windowWidth, setWindowWidth] = React.useState(0);
 
-    useEffect(() => {
-        setLeftWords(currentText.map((el, index) => index));
-    }, [currentText]);
+    const SuccessSymbolAction = React.useCallback(() => {
+        setNextSymbol(currentSymbol.count + 1);
+        setSuccess(statistics.success + 1);
+    }, [setSuccess, setNextSymbol]);
 
-    const getLevelAccuracy = React.useCallback(() => {
-        if (statistics.accuracy > 90) {
-            return 'count_high';
-        }
-        if (statistics.accuracy > 80) {
-            return 'count_medium';
-        }
+    const missSymbolAction = React.useCallback(() => {
+        setNextSymbol(0);
+        const successed = statistics.success - currentSymbol.count;
+        setMiss(statistics.miss + 1);
+        setSuccess(successed);
+    }, [setSuccess, setMiss, setNextSymbol]);
 
-        return 'count_low';
-    }, [statistics]);
-
-    const getLevelBpm = React.useCallback(
-        function getLevelBpm() {
-            if (statistics.bpm > 200) {
-                return 'count_high';
-            }
-            if (statistics.bpm > 100 && statistics.bpm < 200) {
-                return 'count_medium';
-            }
-
-            return 'count_low ';
-        },
-        [statistics]
-    );
-    useEffect(() => {
-        console.log(leftWords);
-    }, [leftWords]);
-    const handleSuccessWord = React.useCallback(() => {
+    const SuccessWordAction = React.useCallback(() => {
         if (mode === 'random') {
             const random = Math.floor(Math.random() * (leftWords.length - 2 - 0 + 1) + 0);
             const newArray = leftWords.filter((el) => el !== currentWord.count);
@@ -67,68 +56,87 @@ function App() {
         setLeftWords((prev) => prev.filter((el) => el !== currentWord.count));
     }, [currentWord.count, currentText.length, leftWords, mode, setNextSymbol, setNextWord]);
 
-    const startGame = React.useCallback(() => {
+    const handleStartButton = React.useCallback(() => {
+        if (currentText.length > 0) {
+            setPlaying(true);
+        } else {
+            newGame();
+        }
+    }, [setStartText, currentText]);
+
+    const newGame = React.useCallback(() => {
         setPlaying(true);
-        setStartText(texts, 10);
+        setStartText(texts, wordCounter);
     }, [setStartText]);
+
+    const isGameFinished = React.useCallback(
+        (e) => {
+            return isSuccsessWord(e) && leftWords.length === 1;
+        },
+        [leftWords.length, isSuccsessWord]
+    );
+
+    const resetGame = React.useCallback(() => {
+        setWon(false);
+        setCurrentText([]);
+        setNextSymbol(0);
+        setNextWord(0);
+        resetStatistics();
+        setMode('');
+    }, [setCurrentText, setNextSymbol, setNextWord, resetStatistics]);
 
     const handleKey = React.useCallback(
         (e) => {
-            if (isSomeSymbols(e)) {
-                console.log(isSomeSymbols(e));
-                return;
-            }
-            if (isSuccsessWord(e) && leftWords.length === 1) {
-                setPlaying(false);
-                setCurrentText([]);
-                setNextSymbol(0);
-                setNextWord(0);
-                resetStatistics();
-                setMode('');
-                return;
-            }
-            if (isSuccsessWord(e)) {
-                handleSuccessWord();
-                return;
-            }
-            if (isSuccsessSymbol(e)) {
-                setNextSymbol(currentSymbol.count + 1);
-                setSuccess(statistics.success + 1);
-                return;
-            }
+            if (isPlaying) {
+                if (e.key === 'Escape') {
+                    setPlaying(false);
+                    return;
+                }
+                if (isNoActionKey(e)) {
+                    return;
+                }
+                if (isGameFinished(e)) {
+                    setWon(true);
+                    setPlaying(false);
+                    return;
+                }
+                if (isSuccsessWord(e)) {
+                    SuccessWordAction();
+                    return;
+                }
+                if (isSuccsessSymbol(e)) {
+                    SuccessSymbolAction();
+                    return;
+                }
 
-            setNextSymbol(0);
-            const successed = statistics.success - currentSymbol.count;
-            setMiss(statistics.miss + 1);
-            setSuccess(successed);
+                missSymbolAction();
+            }
+            if (e.key === 'Enter') {
+                setPlaying(true);
+            }
         },
 
         [
-            handleSuccessWord,
-            setCurrentText,
+            SuccessWordAction,
             leftWords.length,
-            resetStatistics,
             statistics,
             setMiss,
-            isSomeSymbols,
+            isNoActionKey,
             isSuccsessWord,
             isSuccsessSymbol,
             currentSymbol.count,
             setNextSymbol,
-            setNextWord,
             setSuccess,
         ]
     );
 
-    const getGameState = React.useCallback(() => {
-        return (!isPlaying && mode === '') || isPlaying;
-    }, [isPlaying, mode]);
+    useEffect(() => {
+        setLeftWords(currentText.map((el, index) => index));
+    }, [currentText]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKey);
-        if (!isPlaying) {
-            window.removeEventListener('keydown', handleKey);
-        }
+
         return () => {
             window.removeEventListener('keydown', handleKey);
         };
@@ -139,52 +147,46 @@ function App() {
             <Header />
             <main className='content'>
                 <div className='container'>
+                    <div className={`input ${currentWord.word && 'input_active'}`}>
+                        {currentWord.word &&
+                            currentWord.word.split('').map((letter, index) => (
+                                <Letter
+                                    key={index}
+                                    letter={letter}
+                                    isActive={isActiveSymbol(index)}
+                                />
+                            ))}
+                    </div>
+
                     <button
-                        disabled={getGameState() && true}
+                        disabled={!isButtonActive()}
                         type='button'
-                        onClick={startGame}
-                        className={`button ${getGameState() && 'button_disabled'}`}
+                        onClick={handleStartButton}
+                        className={`button ${!isButtonActive() && 'button_disabled'}`}
                     >
                         {getSumbitText()}
                     </button>
-                    <div className='statistic-group'>
-                        <div className='statistic'>
-                            <p className='statistic__count statistic__count_success'>
-                                Success
-                                <span className='current-count-number count_high'> {statistics.success}</span>
-                            </p>
-                            <p className='statistic__count statistic__count_miss'>
-                                Miss<span className='miss-count-number count_low'> {statistics.miss}</span>
-                            </p>
-                            <p className='statistic__count statistic__count_bpm'>
-                                BPM
-                                <span className={`bpm-count-number ${getLevelBpm()}`}>
-                                    {statistics.bpm ? statistics.bpm.toFixed(0) : 0}
-                                </span>
-                            </p>
-                            <p className='statistic__count statistic__count_accuracy'>
-                                Accuracy
-                                <span className={`accuracy-count-number ${getLevelAccuracy()}`}>
-                                    {statistics.accuracy.toFixed(2)}%
-                                </span>
-                            </p>
-                        </div>
-                    </div>
-                    <div className={`input ${currentWord.word && 'input_active'}`}>
-                        {currentWord.word &&
-                            currentWord.word
-                                .split('')
-                                .map((letter, index) => (
-                                    <Letter key={index} letter={letter} isActive={currentSymbol.count > index} />
-                                ))}
-                    </div>
-                    {isPlaying && (
+                    <Statistics
+                        name={'header'}
+                        statistics={statistics}
+                        getLevelAccuracy={getLevelAccuracy}
+                        getLevelBpm={getLevelBpm}
+                    />
+
+                    {currentText.length > 0 && (
                         <ul className='words-container'>
                             {currentText.length > 0 &&
                                 currentText.map((word, indexWord) => (
-                                    <Word isActive={getWordClass(indexWord)} key={indexWord}>
+                                    <Word
+                                        activeClass={getWordClass(indexWord)}
+                                        key={indexWord}
+                                    >
                                         {word.split('').map((letter, index) => (
-                                            <Letter isActive={false} key={index} letter={letter} />
+                                            <Letter
+                                                isActive={false}
+                                                key={index}
+                                                letter={letter}
+                                            />
                                         ))}
                                     </Word>
                                 ))}
@@ -192,31 +194,80 @@ function App() {
                     )}
 
                     <div className='mode-group'>
-                        <label className={`mode__item ${mode === 'standart' && 'mode__item_active'}`}>
-                            <input
-                                onChange={(e) => setMode(e.target.value)}
-                                type='radio'
-                                name='mode'
-                                value='standart'
-                                className='real-radio-btn'
-                            />
-                            <span className='custom-radio-btn'></span>
-                            Standart
-                        </label>
-                        <label className={`mode__item ${mode === 'random' && 'mode__item_active'}`}>
-                            <input
-                                onChange={(e) => setMode(e.target.value)}
-                                type='radio'
-                                name='mode'
-                                value='random'
-                                className='real-radio-btn'
-                            />
-                            <span className='custom-radio-btn'></span>
-                            Random
-                        </label>
+                        <div className='modes'>
+                            <label className={`mode__item ${mode === 'standart' && 'mode__item_active'}`}>
+                                <input
+                                    onChange={(e) => setMode(e.target.value)}
+                                    type='radio'
+                                    name='mode'
+                                    value='standart'
+                                    className='real-radio-btn'
+                                    disabled={!isInputActive()}
+                                />
+                                <span className='custom-radio-btn'></span>
+                                Standart
+                            </label>
+                            <label className={`mode__item ${mode === 'random' && 'mode__item_active'}`}>
+                                <input
+                                    onChange={(e) => setMode(e.target.value)}
+                                    type='radio'
+                                    name='mode'
+                                    value='random'
+                                    className='real-radio-btn'
+                                    disabled={!isInputActive()}
+                                />
+                                <span className='custom-radio-btn'></span>
+                                Random
+                            </label>
+                        </div>
+                        <div className='count-word'>
+                            <label className='count-word__label'>
+                                {wordCounter}
+                                <input
+                                    type='range'
+                                    name='number'
+                                    step='1'
+                                    min='1'
+                                    max='100'
+                                    value={wordCounter}
+                                    onChange={(e) => setWordCounter(e.target.value)}
+                                    className='count-word__input'
+                                    disabled={!isInputActive()}
+                                />
+                            </label>
+                        </div>
                     </div>
                 </div>
             </main>
+
+            {isWon && (
+                <div className='popup'>
+                    <div className='popup__container'>
+                        <h2 className='popup__title'>YOU WON</h2>
+                        <p className='popup__subtitle'>RESULT</p>
+                        <Statistics
+                            statistics={statistics}
+                            getLevelAccuracy={getLevelAccuracy}
+                            getLevelBpm={getLevelBpm}
+                            name={'popup'}
+                        />
+                        <button
+                            onClick={resetGame}
+                            className='popup__button'
+                        >
+                            TRY AGAIN
+                        </button>
+                    </div>
+                </div>
+            )}
+            {/* <div className='popup'>
+                <div className='rules'>
+                    <h2 className='rules__title'>Instruction</h2>
+                    <div className="stastistic-rules">
+                        <div className="statistic-rules__screen"></div>
+                    </div>
+                </div>
+            </div> */}
         </div>
     );
 }

@@ -14,6 +14,28 @@ function useStatistic(isPlaying) {
         setStatistics((prev) => ({ ...prev, success: count }));
     }
 
+    function getLevelAccuracy() {
+        if (statistics.accuracy > 90) {
+            return 'count_high';
+        }
+        if (statistics.accuracy > 80) {
+            return 'count_medium';
+        }
+
+        return 'count_low';
+    }
+
+    function getLevelBpm() {
+        if (statistics.bpm > 200) {
+            return 'count_high';
+        }
+        if (statistics.bpm > 100 && statistics.bpm < 200) {
+            return 'count_medium';
+        }
+
+        return 'count_low ';
+    }
+
     useEffect(() => {
         setStatistics((prev) => ({ ...prev, bpm: (60 / timer) * prev.success }));
     }, [timer]);
@@ -39,7 +61,7 @@ function useStatistic(isPlaying) {
         };
     }, [isPlaying]);
 
-    return [statistics, resetStatistics, setSuccess, setMiss];
+    return [statistics, resetStatistics, setSuccess, setMiss, getLevelAccuracy, getLevelBpm];
 }
 
 export default useStatistic;
