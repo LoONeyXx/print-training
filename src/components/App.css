@@ -9,8 +9,10 @@
 .App {
     background-color: rgb(5, 17, 13);
     font-family: 'Josefin Sans', sans-serif;
-    height: 100vh;
     padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 .container {
@@ -43,6 +45,7 @@
     flex-wrap: wrap;
     margin-top: 50px;
     gap: 10px;
+    flex-grow: 1;
 }
 
 @keyframes fade {
@@ -286,7 +289,9 @@
     color: white;
     font-size: 37px;
     grid-area: screen;
-    align-self: end;
+    align-self: center;
+    pointer-events: none;
+    opacity:.6
 }
 
 .count-word__input {
@@ -306,7 +311,10 @@
     font-size: 18px;
     border-radius: 3px;
 }
-
+.count__word_visible {
+    opacity:1;
+    pointer-events: all;
+}
 .count-word__label {
     display: flex;
     flex-direction: column;
@@ -322,12 +330,25 @@
     font-size: 46px;
 }
 
-
 .statistic-rules__screen {
     width: 500px;
     height: 100px;
-    border:1px solid white;
+    border: 1px solid white;
     position: absolute;
-    top:100px;
-    left:200px;
+    top: 100px;
+    left: 200px;
+}
+
+.file {
+    all: unset;
+    width: 130px;
+    height: 30px;
+    position: absolute;
+    top: 0;
+    left: 7px;
+    opacity: 0;
+}
+
+.file:hover + .mode__item_file {
+    border:1px solid white;
 }

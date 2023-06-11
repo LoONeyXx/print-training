@@ -1,4 +1,6 @@
 import './App.css';
+
+let reader = new FileReader();
 import Header from './Header';
 import React, { useEffect } from 'react';
 import Letter from './Letter';
@@ -11,10 +13,10 @@ import { texts } from '../contexts/CurrentText';
 import useBoolean from './hooks/useBoolean';
 import useClass from './hooks/useClass';
 import Statistics from './Statistics';
-import currentImage from '../image/current.png';
-import statisticsImage from '../image/statistics.png';
-import startImage from '../image/start.png';
+
 function App() {
+    const [file, setFile] = React.useState();
+    const [text, setText] = React.useState('');
     const [wordCounter, setWordCounter] = React.useState(1);
     const [isPlaying, setPlaying] = React.useState(false);
     const [mode, setMode] = React.useState('');
@@ -65,6 +67,25 @@ function App() {
     }, [setStartText, currentText]);
 
     const newGame = React.useCallback(() => {
+        if (mode === 'custom') {
+            setPlaying(true);
+            setStartText(text.replace(/[\n\r]/g, '').split(' '));
+            console.log(
+                text
+                    .replace(/[\n\r]/g, '')
+                    .split(' ')
+                    .map((el) => el.split('...'))
+                    .flat(1)
+                    .filter((el) => el !== '')
+                    .map((el, index, arr) => {
+                        if (index !== arr.length - 1 && arr[index + 1][0] === arr[index + 1][0].toUpperCase()) {
+                            return `${el}.`;
+                        }
+                        return el;
+                    })
+            );
+            return;
+        }
         setPlaying(true);
         setStartText(texts, wordCounter);
     }, [setStartText]);
@@ -75,7 +96,11 @@ function App() {
         },
         [leftWords.length, isSuccsessWord]
     );
-
+    useEffect(() => {
+        if (text) {
+            console.log();
+        }
+    }, [text]);
     const resetGame = React.useCallback(() => {
         setWon(false);
         setCurrentText([]);
@@ -87,6 +112,7 @@ function App() {
 
     const handleKey = React.useCallback(
         (e) => {
+            e.preventDefault();
             if (isPlaying) {
                 if (e.key === 'Escape') {
                     setPlaying(false);
@@ -129,14 +155,22 @@ function App() {
             setSuccess,
         ]
     );
-
+    useEffect(() => {
+        if (file) {
+            const newFile = file[0];
+            reader.readAsText(newFile);
+            reader.onload = () => setText(reader.result);
+        }
+    }, [file]);
     useEffect(() => {
         setLeftWords(currentText.map((el, index) => index));
     }, [currentText]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKey);
-
+        if (!isPlaying) {
+            window.removeEventListener('keydown', handleKey);
+        }
         return () => {
             window.removeEventListener('keydown', handleKey);
         };
@@ -219,8 +253,30 @@ function App() {
                                 <span className='custom-radio-btn'></span>
                                 Random
                             </label>
+                            <label
+                                className={`mode__item mode__item_file ${
+                                    mode === 'custom' && 'mode__item_active'
+                                }`}
+                            >
+                                <input
+                                    noValidate
+                                    type='file'
+                                    onChange={(e) => {
+                                        if (e.target.files[0].name.slice(-3) === 'txt') {
+                                            setFile(e.target.files);
+                                            return;
+                                        }
+
+                                        setMode('');
+                                    }}
+                                    onClick={(e) => setMode('custom')}
+                                    className='file'
+                                    disabled={!isInputActive()}
+                                />
+                                CUSTOM
+                            </label>
                         </div>
-                        <div className='count-word'>
+                        <div className={`count-word ${mode !== 'custom' && 'count__word_visible'}`}>
                             <label className='count-word__label'>
                                 {wordCounter}
                                 <input
