@@ -1,9 +1,9 @@
 import React from 'react';
 import './Statistics.css';
 
-function Statistics({ statistics, getLevelBpm, getLevelAccuracy, name }) {
+function Statistics({ statistics, getLevelBpm, getLevelAccuracy, name, children, isRules }) {
     return (
-        <div className={`statistic statistic_${name}`}>
+        <div className={`statistic ${isRules && 'statistic_rules'} statistic_${name}`}>
             <p className={`statistic__count statistic__count_${name} statistic__count_success`}>
                 Success
                 <span className='current-count-number count_high'> {statistics.success}</span>
@@ -23,6 +23,7 @@ function Statistics({ statistics, getLevelBpm, getLevelAccuracy, name }) {
                     {statistics.accuracy.toFixed(2)}%
                 </span>
             </p>
+            {children}
         </div>
     );
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function useText(text) {
+export default function useText(text,) {
     const [currentText, setCurrentText] = React.useState(text);
 
     function setStartText(array, count = 0) {
@@ -13,6 +13,8 @@ export default function useText(text) {
             setCurrentText(array);
         }
     }
+
+
 
     return [currentText, setStartText, setCurrentText];
 }

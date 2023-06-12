@@ -2,10 +2,30 @@
     color: white;
     text-align: center;
     padding-top: 10px;
-    
+    display: flex;
+    justify-content: space-between;
+    margin-bottom:30px;
 }
 
 .title {
-    margin: 0 0 10px;
+    margin: 0;
     text-transform: uppercase;
+    text-align: left;
+    padding-left:270px;
+}
+
+.instruction {
+    all: unset;
+    margin:0;
+    text-align-last: left;
+    display: flex;
+    align-items: center;
+    align-self: center;
+    padding-right:350px;
+    cursor: pointer;
+    font-size: 26px;
+}
+
+.instruction:hover {
+    text-shadow: 0 0 15px rgb(173, 252, 232);
 }

@@ -18,9 +18,9 @@
 .container {
     /* background-color: rgb(1, 17, 10);
     box-shadow: 0 0 5px rgba(180, 224, 208, 0.863); */
-    width: 80%;
+    max-width: 80%;
     margin: 20px auto;
-    padding: 20px 20px;
+    padding: 0 20px 0 0;
     border-radius: 30px;
 
     display: grid;
@@ -131,6 +131,7 @@
     height: 50px;
     align-self: center;
     animation: fade 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+    position: relative;
 }
 
 .input_active {
@@ -142,6 +143,9 @@
 }
 .statistic {
     grid-area: statistic;
+    position: relative;
+    padding:10px;
+    border:1px solid transparent;
 }
 
 .statistic_header {
@@ -167,7 +171,8 @@
     align-items: center;
     gap: 5px;
     text-transform: uppercase;
-
+    position: relative;
+    z-index: 6;
     cursor: default;
 }
 
@@ -198,12 +203,20 @@
     grid-area: mode;
     display: flex;
     list-style-type: none;
-    padding: 0;
+    padding: 10px;
     align-self: center;
     justify-content: center;
     margin-right: 10px;
     gap: 5px;
     margin-top: 20px;
+    position: relative;
+    border:1px solid transparent;
+    border-radius: 20px;
+}
+
+.mode-group_rules {
+    border:1px solid white;
+
 }
 
 .mode__item {
@@ -249,7 +262,7 @@
     opacity: 0;
 }
 
-.popup,
+
 .wrong-sreen-message {
     position: fixed;
     width: 100vw;
@@ -321,23 +334,8 @@
     justify-content: center;
     align-items: center;
 }
-.rules {
-    align-self: start;
-}
 
-.rules__title {
-    margin: 20px 0;
-    font-size: 46px;
-}
 
-.statistic-rules__screen {
-    width: 500px;
-    height: 100px;
-    border: 1px solid white;
-    position: absolute;
-    top: 100px;
-    left: 200px;
-}
 
 .file {
     all: unset;
@@ -349,6 +347,76 @@
     opacity: 0;
 }
 
-.file:hover + .mode__item_file {
+
+.popup {
+    position: fixed;
+    top:0;
+    left:0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0);
+    display: grid;
+    grid-template-areas: "statistic start-button mode";
+    padding-top:100px;
+}
+
+.mode-group_rules {
+    align-self: start;
+}
+
+.button_rules {
+    align-self: start;
+
+}
+
+.statistic_rules {
+    display: flex;
+    font-size: 26px;
+    color:white;
+}
+
+.rules {
+    color:white;
+    padding: 0;
+    list-style: none;
+    position: absolute;
+    font-size: 18px;
+    padding-left:20px;
+}
+.rules__items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0 0 0 20px;
+}
+.rules__item-title {
+    margin: 0;
+    font-size: 18px;
+}
+
+
+.rules__mode {
+    bottom:-250%;
+    left:0;
+
+}
+
+.rules__statistic {
+    bottom:-320%;
+    left:0;
+}
+
+.statistic_rules {
+    border-radius: 20px;
     border:1px solid white;
+}
+
+.input_rules {
+    border-bottom: 1px solid white;
+    color: rgb(198, 189, 230);
+}
+
+.rules__input {
+   bottom:-200%;
+   left:0
 }

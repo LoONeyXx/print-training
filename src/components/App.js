@@ -25,12 +25,12 @@ function App() {
     const { currentSymbol, setNextSymbol } = useSymbol(currentWord.word);
     const [statistics, resetStatistics, setSuccess, setMiss, getLevelAccuracy, getLevelBpm] =
         useStatistic(isPlaying);
+    const [rules, setRules] = React.useState(false);
     const [leftWords, setLeftWords] = React.useState([]);
     const [isSuccsessSymbol, isSuccsessWord, isNoActionKey, isActiveSymbol, isButtonActive, isInputActive] =
-        useBoolean(currentSymbol, currentWord, isPlaying, mode);
+        useBoolean(currentSymbol, currentWord, isPlaying, mode, rules);
     const [getSumbitText, getWordClass] = useClass(currentWord, leftWords, isPlaying, statistics);
     const [isWon, setWon] = React.useState(false);
-    const [windowWidth, setWindowWidth] = React.useState(0);
 
     const SuccessSymbolAction = React.useCallback(() => {
         setNextSymbol(currentSymbol.count + 1);
@@ -70,20 +70,6 @@ function App() {
         if (mode === 'custom') {
             setPlaying(true);
             setStartText(text.replace(/[\n\r]/g, '').split(' '));
-            console.log(
-                text
-                    .replace(/[\n\r]/g, '')
-                    .split(' ')
-                    .map((el) => el.split('...'))
-                    .flat(1)
-                    .filter((el) => el !== '')
-                    .map((el, index, arr) => {
-                        if (index !== arr.length - 1 && arr[index + 1][0] === arr[index + 1][0].toUpperCase()) {
-                            return `${el}.`;
-                        }
-                        return el;
-                    })
-            );
             return;
         }
         setPlaying(true);
@@ -96,19 +82,15 @@ function App() {
         },
         [leftWords.length, isSuccsessWord]
     );
-    useEffect(() => {
-        if (text) {
-            console.log();
-        }
-    }, [text]);
+
     const resetGame = React.useCallback(() => {
         setWon(false);
-        setCurrentText([]);
+        setStartText([]);
         setNextSymbol(0);
         setNextWord(0);
         resetStatistics();
         setMode('');
-    }, [setCurrentText, setNextSymbol, setNextWord, resetStatistics]);
+    }, [setStartText, setNextSymbol, setNextWord, resetStatistics]);
 
     const handleKey = React.useCallback(
         (e) => {
@@ -155,19 +137,33 @@ function App() {
             setSuccess,
         ]
     );
+
+    const handleChangeCustomMode = React.useCallback((e) => {
+        if (e.target.files[0] && e.target.files[0].name.slice(-3) === 'txt') {
+            setFile(e.target.files);
+            setMode(e.target.name);
+            return;
+        }
+    }, []);
+    const handleChangeMode = React.useCallback((e) => {
+        setMode(e.target.value);
+    }, []);
+
     useEffect(() => {
         if (file) {
             const newFile = file[0];
             reader.readAsText(newFile);
             reader.onload = () => setText(reader.result);
-        }
+        } else setText('');
     }, [file]);
+
     useEffect(() => {
         setLeftWords(currentText.map((el, index) => index));
     }, [currentText]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKey);
+
         if (!isPlaying) {
             window.removeEventListener('keydown', handleKey);
         }
@@ -178,10 +174,11 @@ function App() {
 
     return (
         <div className='App'>
-            <Header />
+            <Header onRules={setRules}/>
             <main className='content'>
                 <div className='container'>
-                    <div className={`input ${currentWord.word && 'input_active'}`}>
+                    <div className={`input  ${rules && 'input_rules'} ${currentWord.word && 'input_active'}`}>
+                        {rules && 'function'}
                         {currentWord.word &&
                             currentWord.word.split('').map((letter, index) => (
                                 <Letter
@@ -190,6 +187,14 @@ function App() {
                                     isActive={isActiveSymbol(index)}
                                 />
                             ))}
+                        {rules && (
+                            <div className={`rules  ${rules && 'rules__input'}`}>
+                                <h2 className='rules__item-title'>Current word</h2>
+                                <ul className='rules__items'>
+                                    <li className='rules__description'>shows the current word</li>
+                                </ul>
+                            </div>
+                        )}
                     </div>
 
                     <button
@@ -205,7 +210,28 @@ function App() {
                         statistics={statistics}
                         getLevelAccuracy={getLevelAccuracy}
                         getLevelBpm={getLevelBpm}
-                    />
+                        isRules={rules}
+                    >
+                        {rules && (
+                            <div className='rules rules__statistic'>
+                                <h2 className='rules__item-title'>Statistics</h2>
+                                <ul className='rules__items'>
+                                    <li className='rules__description'>
+                                        Success (displays the number of successfully entered characters)
+                                    </li>
+                                    <li className='rules__description'>
+                                        Miss (shows the number of erroneous inputs)
+                                    </li>
+                                    <li className='rules__description'>
+                                        BPM (the number of successful inputs per minute is shown)
+                                    </li>
+                                    <li className='rules__description'>
+                                        Accuracy ( shows the percentage of successful input and erroneous input)
+                                    </li>
+                                </ul>
+                            </div>
+                        )}
+                    </Statistics>
 
                     {currentText.length > 0 && (
                         <ul className='words-container'>
@@ -227,13 +253,13 @@ function App() {
                         </ul>
                     )}
 
-                    <div className='mode-group'>
+                    <div className={`mode-group  ${rules && 'mode-group_rules'}`}>
                         <div className='modes'>
                             <label className={`mode__item ${mode === 'standart' && 'mode__item_active'}`}>
                                 <input
-                                    onChange={(e) => setMode(e.target.value)}
+                                    onClick={handleChangeMode}
                                     type='radio'
-                                    name='mode'
+                                    name='standart'
                                     value='standart'
                                     className='real-radio-btn'
                                     disabled={!isInputActive()}
@@ -243,9 +269,9 @@ function App() {
                             </label>
                             <label className={`mode__item ${mode === 'random' && 'mode__item_active'}`}>
                                 <input
-                                    onChange={(e) => setMode(e.target.value)}
+                                    onClick={handleChangeMode}
                                     type='radio'
-                                    name='mode'
+                                    name='random'
                                     value='random'
                                     className='real-radio-btn'
                                     disabled={!isInputActive()}
@@ -259,17 +285,9 @@ function App() {
                                 }`}
                             >
                                 <input
-                                    noValidate
                                     type='file'
-                                    onChange={(e) => {
-                                        if (e.target.files[0].name.slice(-3) === 'txt') {
-                                            setFile(e.target.files);
-                                            return;
-                                        }
-
-                                        setMode('');
-                                    }}
-                                    onClick={(e) => setMode('custom')}
+                                    name='custom'
+                                    onChange={handleChangeCustomMode}
                                     className='file'
                                     disabled={!isInputActive()}
                                 />
@@ -292,6 +310,28 @@ function App() {
                                 />
                             </label>
                         </div>
+                        {rules && (
+                            <div className='rules rules__mode'>
+                                <h2 className='rules__item-title'>Select the game mode</h2>
+                                <ul className='rules__items'>
+                                    <li className='rules__description'>
+                                        Standart (the words will appear in the next sequence)
+                                    </li>
+                                    <li className='rules__description'>
+                                        Random (the words will appear in a random sequence)
+                                    </li>
+                                    <li className='rules__description'>
+                                        Custom (you can add your file in 'txt' format)
+                                    </li>
+                                </ul>
+                                <h2 className='rules__item-title'>Select the number of words</h2>
+                                <ul className='rules__items'>
+                                    <li className='rules__description'>
+                                        You can choose the number of words from 1 to 100
+                                    </li>
+                                </ul>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>
@@ -316,16 +356,21 @@ function App() {
                     </div>
                 </div>
             )}
-            {/* <div className='popup'>
-                <div className='rules'>
-                    <h2 className='rules__title'>Instruction</h2>
-                    <div className="stastistic-rules">
-                        <div className="statistic-rules__screen"></div>
-                    </div>
-                </div>
-            </div> */}
         </div>
     );
 }
 
 export default App;
+
+/**  <div className='rules'>
+                    <h2 className='rules__title'>Instruction</h2>
+                    <div className='stastistic-rules'>
+                        <div className='statistic-rules__screen'></div>
+                    </div>
+                    <div className='start-rules'>
+                        <div className='start-rules__screen'></div>
+                    </div>
+                    <div className='mode-rules'>
+                        <div className='mode-rules__screen'></div>
+                    </div>
+                </div> */
