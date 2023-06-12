@@ -1,0 +1,58 @@
+.statistic p {
+    margin: 0;
+}
+.statistic {
+    grid-area: statistic;
+    position: relative;
+    padding: 10px;
+    border: 1px solid transparent;
+}
+.statistic_rules {
+    border-radius: 20px;
+    border: 1px solid white;
+}
+.statistic_header {
+    font-size: 28px;
+    margin-left: 30px;
+    color: rgb(93, 93, 97);
+    align-self: start;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+}
+
+.statistic_popup {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0 0;
+}
+
+.statistic__count {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    text-transform: uppercase;
+
+    cursor: default;
+}
+
+.statistic__count_header {
+    font-size: 24px;
+}
+.statistic__count_popup {
+    font-size: 18px;
+}
+
+.count_high {
+    color: rgb(111, 226, 145);
+}
+
+.count_medium {
+    color: rgb(233, 233, 113);
+}
+
+.count_low {
+    color: rgb(231, 95, 95);
+}

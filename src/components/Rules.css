@@ -1,0 +1,46 @@
+.mode-group_rules {
+    align-self: start;
+}
+
+.button_rules {
+    align-self: start;
+}
+
+.rules {
+    color: white;
+    padding: 0;
+    list-style: none;
+    position: absolute;
+    font-size: 18px;
+    padding-left: 20px;
+}
+.rules__items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0 0 0 20px;
+}
+.rules__item-title {
+    margin: 0;
+    font-size: 18px;
+}
+
+.rules__mode {
+    bottom: -250%;
+    left: 0;
+}
+
+.rules__statistic {
+    bottom: -320%;
+    left: 0;
+}
+
+.input_rules {
+    border-bottom: 1px solid white;
+    color: rgb(198, 189, 230);
+}
+
+.rules__input {
+    bottom: -200%;
+    left: 0;
+}
