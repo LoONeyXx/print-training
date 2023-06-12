@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './Header.module.css';
 
-function Header({ onRules }) {
+function Header({ onRules, isActive }) {
     function handleClickRules() {
         onRules((prev) => !prev);
     }
@@ -9,6 +9,7 @@ function Header({ onRules }) {
         <header className={styles.header}>
             <h1 className={styles.title}>Print training</h1>
             <button
+                disabled={!isActive}
                 onClick={handleClickRules}
                 className={styles.instruction}
             >

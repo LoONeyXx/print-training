@@ -13,6 +13,7 @@ import { texts } from '../contexts/CurrentText';
 import useBoolean from './hooks/useBoolean';
 import useClass from './hooks/useClass';
 import Statistics from './Statistics';
+import Rules from './Rules';
 
 function App() {
     const [file, setFile] = React.useState();
@@ -174,7 +175,10 @@ function App() {
 
     return (
         <div className='App'>
-            <Header onRules={setRules}/>
+            <Header
+                isActive={currentText.length === 0}
+                onRules={setRules}
+            />
             <main className='content'>
                 <div className='container'>
                     <div className={`input  ${rules && 'input_rules'} ${currentWord.word && 'input_active'}`}>
@@ -188,12 +192,15 @@ function App() {
                                 />
                             ))}
                         {rules && (
-                            <div className={`rules  ${rules && 'rules__input'}`}>
-                                <h2 className='rules__item-title'>Current word</h2>
+                            <Rules
+                                rules={rules}
+                                name='input'
+                                title='Current word'
+                            >
                                 <ul className='rules__items'>
                                     <li className='rules__description'>shows the current word</li>
                                 </ul>
-                            </div>
+                            </Rules>
                         )}
                     </div>
 
@@ -213,8 +220,11 @@ function App() {
                         isRules={rules}
                     >
                         {rules && (
-                            <div className='rules rules__statistic'>
-                                <h2 className='rules__item-title'>Statistics</h2>
+                            <Rules
+                                rules={rules}
+                                name='statistic'
+                                title='Statistics'
+                            >
                                 <ul className='rules__items'>
                                     <li className='rules__description'>
                                         Success (displays the number of successfully entered characters)
@@ -229,7 +239,7 @@ function App() {
                                         Accuracy ( shows the percentage of successful input and erroneous input)
                                     </li>
                                 </ul>
-                            </div>
+                            </Rules>
                         )}
                     </Statistics>
 
@@ -311,8 +321,11 @@ function App() {
                             </label>
                         </div>
                         {rules && (
-                            <div className='rules rules__mode'>
-                                <h2 className='rules__item-title'>Select the game mode</h2>
+                            <Rules
+                                title='Select the game mode'
+                                name='mode'
+                                rules={rules}
+                            >
                                 <ul className='rules__items'>
                                     <li className='rules__description'>
                                         Standart (the words will appear in the next sequence)
@@ -330,7 +343,7 @@ function App() {
                                         You can choose the number of words from 1 to 100
                                     </li>
                                 </ul>
-                            </div>
+                            </Rules>
                         )}
                     </div>
                 </div>
