@@ -1,0 +1,17 @@
+.word {
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    border-bottom:1px solid transparent;
+    transition: all .6s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.word_active {
+    text-shadow: 0 0 20px white;;
+}
+
+.word_deactive {
+    opacity:0
+}
